@@ -3,6 +3,9 @@
 .env.*
 !.env.example
 
+#Claude
+CLAUDE.md
+
 # ── Python / tooling ─────────────────────────────────────────────────────
 .venv/
 __pycache__/
