@@ -1,0 +1,41 @@
+# Vendor / model capability registry.
+# Declares which env var carries the key, whether a model supports native
+# tool-calling (else the integrity scenario uses the text-protocol fallback),
+# and whether the endpoint honors a decoding `seed`.
+#
+# capabilities are declared per (vendor, model_version); a vendor-level default
+# applies when a specific model is not listed.
+
+vendors:
+  openai:
+    api_key_env: OPENAI_API_KEY
+    default:
+      supports_native_tools: true
+      supports_seed: true
+    models:
+      gpt-4o:        { supports_native_tools: true, supports_seed: true }
+      gpt-4o-mini:   { supports_native_tools: true, supports_seed: true }
+      gpt-3.5-turbo: { supports_native_tools: true, supports_seed: true }   # older / more breakable
+      gpt-4-turbo:   { supports_native_tools: true, supports_seed: true }   # 2023 flagship (mid-robust)
+      gpt-5-nano:    { supports_native_tools: true, supports_seed: false }  # 2026 small (mid); temp=default only
+      o4-mini:       { supports_native_tools: true, supports_seed: false }  # reasoning (robust); temp=default only
+      # NOTE: gpt-5 / gpt-5-mini require OpenAI org verification (404 without it) — excluded.
+
+  gemini:
+    api_key_env: GEMINI_API_KEY
+    default:
+      supports_native_tools: true
+      supports_seed: false          # Gemini largely ignores seed → best-effort only
+    models:
+      gemini-2.0-flash:         { supports_native_tools: true, supports_seed: false }
+      gemini-2.5-flash-lite:    { supports_native_tools: true, supports_seed: false }
+      gemini-flash-lite-latest: { supports_native_tools: true, supports_seed: false }
+
+  groq:
+    api_key_env: GROQ_API_KEY
+    default:
+      supports_native_tools: true
+      supports_seed: false
+    models:
+      llama-3.3-70b-versatile: { supports_native_tools: true,  supports_seed: false }
+      llama-3.1-8b-instant:    { supports_native_tools: false, supports_seed: false }

@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "breachbench"
+version = "0.1.0"
+description = "BreachBenchmark — a deterministic-first, closed-loop red-teaming harness for LLM safety-boundary evaluation."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "BreachBenchmark (UC Berkeley capstone)" }]
+dependencies = [
+    "pydantic>=2.6",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0",
+    "numpy>=1.26",
+    "pandas>=2.1",
+    "tenacity>=8.2",
+]
+
+[project.optional-dependencies]
+# Vendor SDKs are optional so the core imports cleanly with none installed.
+openai = ["openai>=1.30"]
+gemini = ["google-genai>=0.3"]
+groq = ["groq>=0.9"]
+# Analysis stack is heavy; kept optional so the harness core stays lean.
+analysis = ["lifelines>=0.27", "scipy>=1.11"]
+dev = ["pytest>=8.0", "pytest-cov>=4.1"]
+all = [
+    "openai>=1.30",
+    "google-genai>=0.3",
+    "groq>=0.9",
+    "lifelines>=0.27",
+    "scipy>=1.11",
+    "pytest>=8.0",
+]
+
+[project.scripts]
+breachbench-run = "breachbench.cli:run_experiment_cli"
+breachbench-pilot = "breachbench.cli:pilot_cli"
+breachbench-analyze = "breachbench.cli:analyze_cli"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+pythonpath = ["src"]

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BreachBench — Live Siege Replay</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ============ TOP BAR ============ -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">⚔️🏰</span>
+      <div class="brand-text">
+        <h1>BreachBench</h1>
+        <p>Adaptive LLM red-team siege — <em>real transcript replay</em></p>
+      </div>
+    </div>
+    <div class="run-picker">
+      <label for="runSelect">Siege</label>
+      <select id="runSelect" aria-label="Choose a siege to replay"></select>
+    </div>
+  </header>
+
+  <!-- ============ MISSION STRIP ============ -->
+  <section class="mission" id="mission">
+    <div class="mission-cell">
+      <span class="mlabel">Objective</span>
+      <span class="mval" id="mObjective">—</span>
+    </div>
+    <div class="mission-cell">
+      <span class="mlabel">Attack vector</span>
+      <span class="mval" id="mVector">—</span>
+    </div>
+    <div class="mission-cell">
+      <span class="mlabel">Boundary</span>
+      <span class="mval" id="mBoundary">—</span>
+    </div>
+    <div class="mission-cell">
+      <span class="mlabel">Round</span>
+      <span class="mval"><span id="mRound">0</span> / <span id="mKmax">10</span></span>
+    </div>
+    <div class="mission-cell status-cell" id="mStatusCell">
+      <span class="mlabel">Vault status</span>
+      <span class="mval" id="mStatus">🔒 Secure</span>
+    </div>
+  </section>
+
+  <!-- ============ BATTLEFIELD ============ -->
+  <section class="battlefield" id="battlefield">
+    <!-- Themed backdrop (layers injected per theme) -->
+    <div class="scene" id="scene" aria-hidden="true"></div>
+
+    <!-- Attacker -->
+    <div class="combatant attacker" id="attackerFig">
+      <div class="fighter-svg" id="attackerSvg"></div>
+      <div class="nameplate red">
+        <span class="role">⚔️ Attacker</span>
+        <span class="model" id="attackerModel">—</span>
+        <span class="sub">fixed red-team instrument</span>
+      </div>
+    </div>
+
+    <!-- spacing column between the fighters -->
+    <div class="lane" id="lane" aria-hidden="true"></div>
+
+    <!-- Defender + themed fortress (fortress innards injected per theme) -->
+    <div class="combatant defender" id="defenderFig">
+      <div class="castle" id="castle"></div>
+      <div class="fighter-svg shielded" id="defenderSvg"></div>
+      <div class="nameplate blue">
+        <span class="role">🛡️ Defender</span>
+        <span class="model" id="defenderModel">—</span>
+        <span class="sub" id="defenderName">—</span>
+      </div>
+    </div>
+
+    <!-- Thrown projectile + impact burst (art injected per theme) -->
+    <div class="projectile" id="projectile" aria-hidden="true"></div>
+    <div class="impact" id="impact" aria-hidden="true"></div>
+    <div class="debris" id="debris" aria-hidden="true"></div>
+
+    <!-- Survival dots -->
+    <div class="survival" id="survival" aria-label="Round-by-round survival"></div>
+
+    <!-- Breach / hold banner -->
+    <div class="banner" id="banner"></div>
+  </section>
+
+  <!-- ============ JUDGE'S RULING (secondary, appears at end of run) ============ -->
+  <section class="judge-card" id="judgeCard" aria-hidden="true">
+    <div class="jc-inner">
+      <div class="jc-head">⚖️ The Judge's ruling
+        <span class="jc-sub">a separate AI — scores persona/refusal only, never decides the breach</span>
+      </div>
+      <div class="jc-verdict-row">
+        <span class="jc-badge" id="jcBadge">—</span>
+        <span class="jc-score" id="jcScore"></span>
+        <span class="jc-versus" id="jcVersus"></span>
+      </div>
+      <p class="jc-rationale" id="jcRationale"></p>
+      <p class="jc-takeaway" id="jcTakeaway"></p>
+    </div>
+  </section>
+
+  <!-- ============ CONVERSATION ============ -->
+  <section class="dialogue" id="dialogue">
+    <div class="dialogue-empty" id="dialogueEmpty">Press <strong>Play</strong> to begin the siege.</div>
+  </section>
+
+  <!-- ============ TRANSPORT ============ -->
+  <footer class="transport">
+    <div class="caption" id="caption"></div>
+    <div class="controls">
+      <button id="btnRestart" title="Restart">⏮</button>
+      <button id="btnPrev" title="Previous round">◀</button>
+      <button id="btnPlay" class="primary" title="Play / pause">▶ Play</button>
+      <button id="btnNext" title="Next round">▶</button>
+      <span class="speed">
+        <label for="speed">Speed</label>
+        <input type="range" id="speed" min="0.5" max="4" step="0.25" value="1" />
+        <span id="speedVal">1×</span>
+      </span>
+    </div>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="themes.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

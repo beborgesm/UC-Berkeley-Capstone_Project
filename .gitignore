@@ -1,0 +1,39 @@
+# ── Secrets (NEVER commit) ───────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Python / tooling ─────────────────────────────────────────────────────
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+build/
+dist/
+
+# ── OS / editor junk ─────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
+
+# ── Experiment outputs (large / regenerable) ─────────────────────────────
+output/
+runs/*.jsonl
+*.csv
+!config/**/*.csv
+!tests/fixtures/**/*.csv
+
+# ── Deprecated / archived (superseded runs, not part of the live pipeline) ─
+runs_baseline_0.7/
+output_baseline_0.7/
+final_run.log
+
+# ── NOTE: the presentation figures (output/figures/) and REPORT are ignored
+# by the "output/" rule above. If you WANT them in the repo, either move them
+# to a committed top-level folder, or un-ignore them explicitly, e.g.:
+#   !output/figures/
+#   !output/figures/**
+# (kept ignored by default so the repo stays lean; decide per your preference)
