@@ -26,6 +26,7 @@
     treasure: $("treasure"), treasureIcon: $("treasureIcon"),
     treasureLabel: $("treasureLabel"), treasureValue: $("treasureValue"),
     survival: $("survival"), banner: $("banner"),
+    judgeReveal: $("judgeReveal"), judgeToggle: $("judgeToggle"),
     judgeCard: $("judgeCard"), jcBadge: $("jcBadge"), jcScore: $("jcScore"),
     jcVersus: $("jcVersus"), jcRationale: $("jcRationale"), jcTakeaway: $("jcTakeaway"),
     dialogue: $("dialogue"), dialogueEmpty: $("dialogueEmpty"),
@@ -122,7 +123,7 @@
 
   // ---------- scene helpers ----------
   function resetScene() {
-    hideJudgeCard();
+    disarmJudge();
     handSpear(true);
     el.projectile.className = "projectile"; el.projectile.style.opacity = "0";
     el.impact.className = "impact";
@@ -407,7 +408,7 @@
     el.banner.className = "banner breach" + (instant ? " show" : "");
     el.banner.innerHTML = `💥 BREACH — round ${br}<small>${conf ? "canary token leaked" : "forbidden tool invoked"}</small>`;
     if (!instant) { el.banner.classList.remove("show"); void el.banner.offsetWidth; el.banner.classList.add("show"); }
-    showJudgeCard();
+    armJudgeButton();
   }
   function showHoldState(instant) {
     el.castle.classList.add("victory");
@@ -419,11 +420,37 @@
     // fade banner after a beat so it doesn't cover the scene
     const myTok = token;
     setTimeout(() => { if (myTok === token) el.banner.classList.remove("show"); }, 4200 / speedMul());
-    showJudgeCard();
+    armJudgeButton();
   }
 
   // ---------- Judge's ruling (SECONDARY; verdict baked in, never live) ----------
   const V_LABEL = { PERSONA_BREAK: "Persona break", WEAK_REFUSAL: "Weak refusal", NO_DEGRADATION: "No degradation" };
+  const JUDGE_SHOW = "⚖️ Show the Judge's verdict";
+  const JUDGE_HIDE = "✕ Hide the Judge's verdict";
+  // At run end we ARM the reveal button (don't auto-show the card, so the deterministic
+  // result lands first). The button toggles the card on demand.
+  function armJudgeButton() {
+    hideJudgeCard();
+    if (!run.judge) { disarmJudge(); return; }
+    el.judgeToggle.textContent = JUDGE_SHOW;
+    el.judgeReveal.classList.add("show");
+    el.judgeReveal.setAttribute("aria-hidden", "false");
+  }
+  function disarmJudge() {
+    hideJudgeCard();
+    el.judgeReveal.classList.remove("show");
+    el.judgeReveal.setAttribute("aria-hidden", "true");
+    el.judgeToggle.textContent = JUDGE_SHOW;
+  }
+  function toggleJudgeCard() {
+    if (el.judgeCard.classList.contains("show")) {
+      hideJudgeCard();
+      el.judgeToggle.textContent = JUDGE_SHOW;
+    } else {
+      showJudgeCard();
+      el.judgeToggle.textContent = JUDGE_HIDE;
+    }
+  }
   function hideJudgeCard() {
     el.judgeCard.classList.remove("show", "degraded", "clean");
     el.judgeCard.setAttribute("aria-hidden", "true");
@@ -488,6 +515,7 @@
   el.btnNext.addEventListener("click", async () => { if (playing) pause(); await revealNext(); });
   el.btnPrev.addEventListener("click", () => { if (playing) pause(); renderStatic(Math.max(0, ptr - 1)); setPlayBtn(); });
   el.btnRestart.addEventListener("click", () => { if (playing) pause(); renderStatic(0); setPlayBtn(); });
+  el.judgeToggle.addEventListener("click", toggleJudgeCard);
   el.speed.addEventListener("input", () => { el.speedVal.textContent = el.speed.value + "×"; });
 
   document.addEventListener("keydown", (e) => {
@@ -512,6 +540,7 @@
   const qs = new URLSearchParams(location.search);
   if (qs.has("run")) { const n = +qs.get("run"); el.runSelect.value = String(n); loadRun(RUNS[n] || RUNS[0]); }
   if (qs.has("jump")) renderStatic(Math.max(0, Math.min(run.n_rounds, +qs.get("jump"))));
+  if (qs.has("openjudge")) toggleJudgeCard(); // debug: open the judge card (as if clicked)
   if (qs.has("spear")) {
     const kind = qs.get("spear") === "breach" ? "breach" : "block";
     el.projectile.className = "projectile " + (kind === "breach" ? "at-breach-end" : "at-block-end");

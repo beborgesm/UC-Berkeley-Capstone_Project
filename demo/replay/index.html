@@ -87,7 +87,12 @@
     <div class="banner" id="banner"></div>
   </section>
 
-  <!-- ============ JUDGE'S RULING (secondary, appears at end of run) ============ -->
+  <!-- ============ JUDGE reveal button (armed only when the run ends) ============ -->
+  <div class="judge-reveal" id="judgeReveal" aria-hidden="true">
+    <button class="jr-btn" id="judgeToggle" type="button">⚖️ Show the Judge's verdict</button>
+  </div>
+
+  <!-- ============ JUDGE'S RULING (secondary, shown on demand) ============ -->
   <section class="judge-card" id="judgeCard" aria-hidden="true">
     <div class="jc-inner">
       <div class="jc-head">⚖️ The Judge's ruling

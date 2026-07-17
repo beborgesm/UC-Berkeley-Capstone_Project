@@ -455,8 +455,20 @@ body {
   100% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
 }
 
-/* ---------------- Judge's ruling card (secondary, end of run) ---------------- */
-.judge-card { display: none; margin: 14px 24px 0; }
+/* ---------------- Judge reveal button (armed at run end) ---------------- */
+.judge-reveal { display: none; margin: 14px 24px 0; text-align: center; }
+.judge-reveal.show { display: block; animation: jcIn 0.4s ease both; }
+.jr-btn {
+  background: linear-gradient(180deg, #2a2f42, #1b2030);
+  color: var(--gold); border: 1px solid var(--gold);
+  border-radius: 11px; padding: 11px 24px; font-size: 14px; font-weight: 700;
+  cursor: pointer; letter-spacing: 0.3px; transition: filter 0.15s, background 0.15s;
+  box-shadow: var(--shadow);
+}
+.jr-btn:hover { background: #33384d; filter: brightness(1.12); }
+
+/* ---------------- Judge's ruling card (secondary, shown on demand) ---------------- */
+.judge-card { display: none; margin: 10px 24px 0; }
 .judge-card.show { display: block; animation: jcIn 0.5s ease both; }
 @keyframes jcIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 .jc-inner {
