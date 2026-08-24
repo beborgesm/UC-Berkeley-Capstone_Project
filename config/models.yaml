@@ -5,6 +5,18 @@
 #
 # capabilities are declared per (vendor, model_version); a vendor-level default
 # applies when a specific model is not listed.
+#
+# This registry is the CAPABILITY layer, not the experiment roster: it describes what each
+# endpoint can do, and every vendor below is implemented and live-validated. Which of them the
+# benchmark actually runs is decided in config/experiment.yaml.
+#
+#   openai  — the benchmark vendor (all 3 published targets + the fixed gpt-4o attacker)
+#   gemini  — the post-hoc SECONDARY Judge runs here (scripts/judge_transcripts.py)
+#   groq    — adapter built and live-validated, including the non-native-tools text-protocol
+#             fallback, but NOT used as a benchmark target: the free-tier daily quota is too
+#             small for this multi-turn workload and polluted the survival curves with
+#             rate-limit censoring (see DEVELOPMENT_TIMELINE.md Phase 6). Kept because it is
+#             the only roster entry that exercises the text-protocol path end-to-end.
 
 vendors:
   openai:
@@ -13,13 +25,15 @@ vendors:
       supports_native_tools: true
       supports_seed: true
     models:
-      gpt-4o:        { supports_native_tools: true, supports_seed: true }
-      gpt-4o-mini:   { supports_native_tools: true, supports_seed: true }
-      gpt-3.5-turbo: { supports_native_tools: true, supports_seed: true }   # older / more breakable
-      gpt-4-turbo:   { supports_native_tools: true, supports_seed: true }   # 2023 flagship (mid-robust)
-      gpt-5-nano:    { supports_native_tools: true, supports_seed: false }  # 2026 small (mid); temp=default only
-      o4-mini:       { supports_native_tools: true, supports_seed: false }  # reasoning (robust); temp=default only
+      gpt-4o:        { supports_native_tools: true, supports_seed: true }   # the fixed Attacker instrument
+      gpt-4o-mini:   { supports_native_tools: true, supports_seed: true }   # 2024 efficient — benchmark target
+      gpt-3.5-turbo: { supports_native_tools: true, supports_seed: true }   # 2023 older / more breakable — benchmark target
+      gpt-5-nano:    { supports_native_tools: true, supports_seed: false }  # 2025 small — benchmark target; temp=default only
+      gpt-4-turbo:   { supports_native_tools: true, supports_seed: true }   # 2023 flagship — declared, only partially collected
+      o4-mini:       { supports_native_tools: true, supports_seed: false }  # reasoning — declared, never collected; temp=default only
       # NOTE: gpt-5 / gpt-5-mini require OpenAI org verification (404 without it) — excluded.
+      # gpt-4-turbo / o4-mini remain listed so restoring them to the roster needs no code or
+      # capability change — see docs/PREREGISTRATION.md for why they weren't collected.
 
   gemini:
     api_key_env: GEMINI_API_KEY
@@ -27,9 +41,11 @@ vendors:
       supports_native_tools: true
       supports_seed: false          # Gemini largely ignores seed → best-effort only
     models:
-      gemini-2.0-flash:         { supports_native_tools: true, supports_seed: false }
-      gemini-2.5-flash-lite:    { supports_native_tools: true, supports_seed: false }
-      gemini-flash-lite-latest: { supports_native_tools: true, supports_seed: false }
+      # Model availability is per-key and per-endpoint: appearing in the key's own model
+      # listing does NOT guarantee the model serves requests. Probed values on this key:
+      gemini-flash-lite-latest: { supports_native_tools: true, supports_seed: false }  # WORKS (routes to gemini-3.1-flash-lite) — used by the post-hoc Judge
+      gemini-2.5-flash-lite:    { supports_native_tools: true, supports_seed: false }  # 404 NOT_FOUND on this key despite being listed
+      gemini-2.0-flash:         { supports_native_tools: true, supports_seed: false }  # 429 quota-zero (free-tier limit: 0) — hard wall, not throttling
 
   groq:
     api_key_env: GROQ_API_KEY
@@ -38,4 +54,4 @@ vendors:
       supports_seed: false
     models:
       llama-3.3-70b-versatile: { supports_native_tools: true,  supports_seed: false }
-      llama-3.1-8b-instant:    { supports_native_tools: false, supports_seed: false }
+      llama-3.1-8b-instant:    { supports_native_tools: false, supports_seed: false }  # no native tools -> exercises the <<TOOL_CALL>> text-protocol fallback

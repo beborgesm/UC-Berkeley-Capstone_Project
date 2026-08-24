@@ -9,7 +9,20 @@ description = "BreachBenchmark — a deterministic-first, closed-loop red-teamin
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
-authors = [{ name = "BreachBenchmark (UC Berkeley capstone)" }]
+authors = [{ name = "Bernardo Machado" }]
+keywords = [
+    "ai-safety", "red-teaming", "llm-evaluation", "jailbreak", "survival-analysis",
+    "kaplan-meier", "benchmark", "prompt-injection",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "pydantic>=2.6",
     "pyyaml>=6.0",
@@ -25,7 +38,11 @@ openai = ["openai>=1.30"]
 gemini = ["google-genai>=0.3"]
 groq = ["groq>=0.9"]
 # Analysis stack is heavy; kept optional so the harness core stays lean.
+# (lifelines pulls matplotlib, which analysis/plots.py uses for the report's KM/heatmap PNGs.)
 analysis = ["lifelines>=0.27", "scipy>=1.11"]
+# The slide-ready gallery in results/figures/ (scripts/make_figures.py); kaleido does the
+# static PNG export.
+figures = ["plotly>=6.0", "kaleido>=0.2"]
 dev = ["pytest>=8.0", "pytest-cov>=4.1"]
 all = [
     "openai>=1.30",
@@ -33,8 +50,15 @@ all = [
     "groq>=0.9",
     "lifelines>=0.27",
     "scipy>=1.11",
+    "plotly>=6.0",
+    "kaleido>=0.2",
     "pytest>=8.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/beborgesm/Capstone_Project"
+Repository = "https://github.com/beborgesm/Capstone_Project"
+Demo = "https://beborgesm.github.io/Capstone_Project/"
 
 [project.scripts]
 breachbench-run = "breachbench.cli:run_experiment_cli"

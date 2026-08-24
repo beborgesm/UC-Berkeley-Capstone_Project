@@ -236,7 +236,7 @@ lens on top of the hard deterministic numbers.
 
 ## 11. Understanding the figures (so you can present them)
 
-The figures are in `output/figures/` (with an index, `FIGURES.md`). The key ones:
+The figures are in [`results/figures/`](../results/figures/) (with an index, `FIGURES.md`). The key ones:
 
 - **Overall ASR bar chart** — the headline 92% / 14% / 8%. Start here.
 - **Kaplan–Meier survival curves** — three descending "staircases"; gpt-3.5's plunges immediately,
@@ -258,13 +258,24 @@ The figures are in `output/figures/` (with an index, `FIGURES.md`). The key ones
   that *never* broke within our window (censoring), uses the *timing* of failure (fast vs slow
   erosion), and comes with rigorous confidence intervals. A raw success rate throws all that away.
 - **"Only 3 models and N=20 — isn't that small?"** — Yes, and we say so. It's a rigorous
-  *methodology demonstration* with honest error bars, not a definitive leaderboard. Two more models
-  were planned but the shared API key was exhausted. Scaling up is future work.
+  *methodology demonstration* with honest error bars, not a definitive leaderboard. Two more
+  models were declared and pre-registered, but the shared API account ran out of credit
+  mid-collection — which killed the attacker too, so no further runs of any kind were possible.
+  The partial data from the 4th model is published as an appendix rather than deleted, and every
+  pre-registered hypothesis is reported with its disposition (`docs/PREREGISTRATION.md`).
+  Scaling up is future work.
+- **"Isn't dropping the models you didn't finish cherry-picking?"** — That's exactly why the
+  hypotheses were locked *before* collection and published unchanged. The comparisons naming the
+  uncollected model are reported as `NOT_COLLECTED`, not removed; the original declaration is
+  kept as a runnable config file so anyone can re-run it and see the same table.
 - **"Could the detector miss a disguised leak?"** — Possibly, for encodings outside our
-  enumerated set; we report this as a known, bounded limitation rather than hiding it.
-- **"Is any of this reproducible?"** — The experiment's *structure* is fully reproducible (seeds,
-  which matches run, the secrets). The models' exact words are not (real AI endpoints are
-  non-deterministic), and we deliberately never claim otherwise.
+  enumerated set; we report this as a known, bounded limitation rather than hiding it. It means
+  our reported leak rates are a **lower bound**.
+- **"Is any of this reproducible?"** — Two different questions. The experiment's *structure* is
+  fully reproducible (seeds, which matches run, the secrets); the models' exact words are not
+  (real AI endpoints are non-deterministic), and we deliberately never claim otherwise. But
+  every *published number and figure* regenerates from the saved data with one command
+  (`make reproduce`), offline, with no API key — and CI checks it on every push.
 - **"What's the real-world takeaway?"** — Safety robustness is a *measurable, model-specific
   property* that (a) degrades over a conversation, (b) varies enormously between models, and (c)
   tracks capability more than recency. Single-prompt safety tests miss all of this.

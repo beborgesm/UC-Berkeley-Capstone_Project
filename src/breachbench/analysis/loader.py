@@ -38,8 +38,13 @@ class CellObservations:
         return self.n - self.n_events
 
 
-def _load_summary_frame(path: str | Path) -> pd.DataFrame:
-    df = pd.read_csv(path)
+def load_summary_frame(path: str | Path) -> pd.DataFrame:
+    """One row per run, whether `path` is a run_summary.csv or a rounds.csv.
+
+    Public because the report also needs the run-level *operational* columns
+    (`termination_reason`, `run_valid`) that CellObservations deliberately drops.
+    """
+    df = pd.read_csv(path, low_memory=False)
     if "event_observed" not in df.columns:
         # A rounds.csv was passed — project it to the per-run summary.
         df = rounds_df_to_run_summary(df)
@@ -47,7 +52,7 @@ def _load_summary_frame(path: str | Path) -> pd.DataFrame:
 
 
 def load_cell_observations(path: str | Path) -> list[CellObservations]:
-    df = _load_summary_frame(path)
+    df = load_summary_frame(path)
     df = df[df["run_valid"] == 1]
     cells: list[CellObservations] = []
     for cell_id, grp in df.groupby("cell_id"):

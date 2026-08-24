@@ -14,7 +14,6 @@ Matplotlib only (ships with lifelines); Agg backend so it renders headless.
 
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
 import matplotlib
@@ -26,6 +25,7 @@ import numpy as np  # noqa: E402
 from .asr import asr_heatmap_matrix
 from .bootstrap import bootstrap_survival
 from .km import kaplan_meier
+from .labels import prettify_model
 from .loader import CellObservations
 
 # Okabe–Ito categorical palette (colorblind-safe), minus low-contrast yellow/black.
@@ -53,11 +53,6 @@ def _apply_style() -> None:
         "xtick.color": _MUTED,
         "ytick.color": _MUTED,
     })
-
-
-def prettify_model(name: str) -> str:
-    """Drop trailing version dates for legible labels: gpt-4o-mini-2024-07-18 -> gpt-4o-mini."""
-    return re.sub(r"-\d{4}-\d{2}-\d{2}$", "", str(name))
 
 
 def _model_colors(models: list[str]) -> dict[str, str]:

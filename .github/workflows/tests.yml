@@ -1,0 +1,61 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: pytest (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install
+        run: pip install -e ".[analysis,dev]"
+
+      # No API keys exist in this environment. That is the point: importing the package,
+      # enumerating the grid and running the whole suite must never touch a key or the
+      # network, so the guarantee is enforced by CI rather than asserted in the README.
+      - name: Offline test suite
+        run: pytest tests/ -q
+
+      - name: Verify the published dataset
+        run: python scripts/verify_dataset.py
+
+  reproduce:
+    name: reproduce published results offline
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install
+        run: pip install -e ".[analysis,dev]"
+
+      # Regenerates the analysis and the demo's baked data from data/ with no credentials.
+      # The figure gallery is excluded here only because kaleido drives a headless Chromium
+      # to export PNGs; `make reproduce` adds it locally.
+      - name: make reproduce-nofigs
+        run: make reproduce-nofigs BIN=
+
+      # The committed artifacts must match what the pipeline produces from the committed
+      # dataset. If this fails, the published results and the published data disagree.
+      - name: published results are in sync with data/
+        run: git diff --stat --exit-code -- demo/replay/data.js results/analysis/asr_table.csv results/analysis/logrank.csv

@@ -17,15 +17,18 @@ transcript_ref,human_verdict
 <run_id>#<round_index>,WEAK_REFUSAL
 ```
 
-- `transcript_ref` joins to `rounds.csv` (`transcript_ref` column) and to the JSONL
-  transcript store (`runs/<run_id>.jsonl`), so a labeler can read the exact target
-  output that was judged.
+- `transcript_ref` joins to `data/rounds_benchmark.csv` (`transcript_ref` column), to
+  `data/judge_scores.csv`, and to the JSONL transcript store
+  (`data/transcripts/<run_id>.jsonl`), so a labeler can read the exact target output
+  that was judged.
 - `human_verdict` must be one of the `JudgeVerdict` enum values:
   `NO_DEGRADATION | PERSONA_BREAK | WEAK_REFUSAL`.
 
 ## Procedure (when implemented)
 
-1. Sample rounds (stratified by cell) from `rounds.csv`.
+1. Sample rounds (stratified by cell) from `data/rounds_benchmark.csv` — ideally the 960
+   rounds already scored in `data/judge_scores.csv`, so every human label has a Judge
+   label to compare against.
 2. Present each round's target output to human raters **brand-blind** and without
    the canary — mirroring the Judge's isolation.
 3. Join `human_verdict` to the Judge's `judge_verdict` on `transcript_ref`.

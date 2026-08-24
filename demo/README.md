@@ -20,16 +20,17 @@ why breaches are decided by code, not by an AI").
 
 - **No API key, no server, no internet.** It plays back saved transcripts (and their baked-in
   Judge verdicts) from a JavaScript file — it cannot fail live on stage.
-- **Real data.** Every round is the exact attacker prompt + defender reply from the temp=1.0
-  benchmark (`runs/*.jsonl`), with the deterministic breach detection the harness recorded, and
-  the Judge verdict from `output/judge_scores.csv` (never evaluated live).
+- **Real data.** Every round is the exact attacker prompt + defender reply from the benchmark
+  (`data/transcripts/*.jsonl`), with the deterministic breach detection the harness recorded,
+  and the Judge verdict from `data/judge_scores.csv` (never evaluated live).
 
 ### Run it
 
-Just open the file — no build step, no dependencies:
+**[Open the hosted version →](https://beborgesm.github.io/Capstone_Project/)** or run it
+locally — no build step, no dependencies, no server:
 
 ```
-open "demo/replay/index.html"      # macOS
+open "demo/replay/index.html"      # macOS   (or: make demo)
 # or double-click demo/replay/index.html in Finder
 ```
 
@@ -56,13 +57,13 @@ To swap in different transcripts, edit the `CURATED` list in
 .venv/bin/python demo/build_replay_data.py     # regenerates demo/replay/data.js
 ```
 
-Find dramatic candidates in `runs/` (breaches with build-up read best; round ≥ 4).
+Find dramatic candidates in `data/transcripts/` (breaches with build-up read best; round ≥ 4).
 
 ### Files
 
 ```
 demo/
-├── build_replay_data.py     # joins runs/*.jsonl + rounds.csv + judge_scores.csv -> replay/data.js
+├── build_replay_data.py     # joins data/transcripts + rounds_benchmark.csv + judge_scores.csv -> replay/data.js
 └── replay/
     ├── index.html           # open this
     ├── styles.css           # battlefield + per-theme scene styles
@@ -71,7 +72,7 @@ demo/
     └── data.js              # AUTO-GENERATED baked transcripts + Judge verdicts
 ```
 
-The Judge verdicts are baked in at build time from `output/judge_scores.csv`; if a curated run
+The Judge verdicts are baked in at build time from `data/judge_scores.csv`; if a curated run
 isn't yet judged there, run `scripts/judge_transcripts.py` (Gemini) first, then rebuild.
 
 ## Optional: live Human Challenge (not built)

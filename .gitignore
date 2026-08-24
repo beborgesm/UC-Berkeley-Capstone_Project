@@ -3,7 +3,7 @@
 .env.*
 !.env.example
 
-#Claude
+# Private working context for AI coding assistants.
 CLAUDE.md
 
 # ── Python / tooling ─────────────────────────────────────────────────────
@@ -22,21 +22,20 @@ dist/
 Thumbs.db
 *.log
 
-# ── Experiment outputs (large / regenerable) ─────────────────────────────
+# ── Runtime scratch vs published data ────────────────────────────────────
+# A live run writes to output/ and runs/. Those are working directories and stay
+# ignored — the PUBLISHED, frozen copies live in data/ and results/ and ARE committed
+# (see data/README.md). Keeping them separate means re-running the harness can never
+# overwrite the collected dataset, which cannot be regenerated.
+#
+# If you are tempted to add a blanket `*.csv` rule here: don't. That is what kept the
+# whole 480-trial dataset off GitHub in the first place.
 output/
-runs/*.jsonl
-*.csv
-!config/**/*.csv
-!tests/fixtures/**/*.csv
+runs/
 
-# ── Deprecated / archived (superseded runs, not part of the live pipeline) ─
-runs_baseline_0.7/
+# ── Local archive: the superseded temperature-0.7 generation ─────────────
+# 320 runs at target temperature 0.7, re-run at 1.0 once the roster required it. Kept
+# on disk for provenance but not published; its result is reported in
+# docs/TEMPERATURE_ABLATION.md.
 output_baseline_0.7/
-final_run.log
-
-# ── NOTE: the presentation figures (output/figures/) and REPORT are ignored
-# by the "output/" rule above. If you WANT them in the repo, either move them
-# to a committed top-level folder, or un-ignore them explicitly, e.g.:
-#   !output/figures/
-#   !output/figures/**
-# (kept ignored by default so the repo stays lean; decide per your preference)
+runs_baseline_0.7/

@@ -277,7 +277,7 @@ that holds the secret). Breach → the castle falls and the leaked token is reve
 hold → the castle stands. It's a self-contained page (no server, no key, no internet), so it
 **cannot fail live**, and every word on screen is genuine benchmark data rather than a scripted
 mock. We curated four sieges: a roleplay confidentiality leak, a reactor override (integrity),
-a 2026 small model that holds eight rounds then cracks, and a mid-tier model that refuses all
+a 2025 small model that holds eight rounds then cracks, and a mid-tier model that refuses all
 ten.
 
 **Lesson:** a demo built on *replaying real results* is not a downgrade from a live demo — it's
@@ -314,16 +314,68 @@ without it, so a free-tier quota wall was an inconvenience, never a threat. And 
 piece of communication: consistency (one color per model, everywhere) matters as much as the
 numbers.
 
+## Phase 9 — Publication: making the repository say what the project actually did
+
+The science was finished; the *repository* wasn't. Read cold by someone who wasn't in the room,
+it told a subtly wrong story — and every problem was the same problem: **the artifacts hadn't
+caught up with the decisions.**
+
+- **The config claimed five models; the data had three.** `experiment.yaml` still declared the
+  full pre-credit-wall roster, so the analysis dutifully printed three `MISSING_CELL / nan`
+  rows. That reads as a project cut short rather than one that was scoped. The fix was *not* to
+  quietly delete the missing entries — that would have destroyed the pre-registration, which is
+  the thing that makes the log-rank tests honest in the first place. Instead we split the two
+  concerns: `experiment.yaml` now declares the **collected benchmark**, while the original
+  locked declaration was frozen verbatim into `config/experiment.preregistered.yaml` — kept as
+  a *runnable* config, not a quotation, so the appendix analysis reproduces the full declared
+  hypothesis table with each pair marked `OK` or `NOT_COLLECTED`. Making the pre-registration
+  executable turned out to be strictly better than merely archiving it.
+- **The headline dataset had no generating script.** `rounds_3models.csv` — the file every
+  published number came from — had been hand-filtered once and never again. We wrote
+  `make_benchmark_subset.py` to derive it from the raw collection using the configured cell
+  identity, and confirmed it reproduces the hand-made file byte-for-byte. That was the single
+  worst reproducibility hole in the project.
+- **None of the data was published.** A blanket `*.csv` rule in `.gitignore` had kept the entire
+  480-trial dataset, all 547 transcripts and the figure gallery off GitHub. The demo only played
+  at all because its baked `data.js` happened to be committed. We split **runtime scratch**
+  (`output/`, `runs/` — still ignored) from the **published, frozen dataset** (`data/`,
+  `results/` — committed), so a re-run can never overwrite data that cannot be regenerated.
+- **The 24 "orphan" transcripts turned out to be evidence.** `transcripts/` held 24 more files
+  than the CSV had runs. Every one ends in a `429 insufficient_quota` — they are the runs that
+  were in flight when the billing wall hit, which the transient-failure rule from Phase 6
+  correctly *invalidated instead of recording*. Rather than prune them, we documented them and
+  wrote `verify_dataset.py` to assert that exact list, so an undocumented orphan now fails CI.
+  What looked like mess was the audit trail for a rule we'd written months earlier.
+- **A label bug hiding in plain sight.** The report mixed `gpt-3.5-turbo-0125` with
+  `gpt-4o-mini`, because the prettifier stripped `-YYYY-MM-DD` but not `-MMDD` — and three
+  copies of that function had drifted apart across `plots.py`, the figure script and the demo
+  builder. Single-sourced into `analysis/labels.py`, with a test asserting all three call sites
+  are the same object.
+
+Everything was regenerated and diffed: **every ASR, CI, χ² and p-value is numerically identical**
+to the pre-existing outputs — only model-label strings and the log-rank table changed. `make
+reproduce` now rebuilds every published number, figure and demo payload offline from `data/`,
+and CI runs the same path on every push and fails if the committed artifacts drift from what the
+data produces.
+
+**Lesson:** an incomplete result and a badly-presented result look identical from outside, and
+only one of them is actually a problem. The work here wasn't hiding the credit wall — it was
+making the repository state *the decisions* (what was scoped, what was declared, what was
+discarded and why) instead of leaving a reader to infer them from a `nan`.
+
 ## Where things stand
 
-- Offline test suite green; full pipeline drives end-to-end.
+- 81 offline tests green; the full pipeline drives end-to-end.
 - Clean 3-model dataset (gpt-3.5-turbo, gpt-4o-mini, gpt-5-nano): 480 runs, 24 cells,
-  181 breaches. Headline ASR 92% / 14% / 8%; both computable pre-registered log-rank pairs
-  separate at p < 0.001.
+  181 breaches, 0 administratively censored. Headline ASR 92% / 14% / 8%; both computable
+  pre-registered log-rank pairs separate at p < 0.001.
 - Secondary Judge (Gemini) sample collected and figures generated; it corroborates the ranking.
-- Deliverables ready: the harness, the analysis + figure gallery, the replay demo, and the
-  context documents. Remaining is presentation assembly (a teammate task) and, as future work,
-  validating the Judge against a human gold set (Cohen's κ).
+- **Published and reproducible.** The dataset, transcripts, analysis and figure gallery are all
+  committed; `make reproduce` regenerates every number and figure offline from `data/` with no
+  API key, and CI enforces that on every push. The demo is served from GitHub Pages.
+- Remaining, as future work: validating the Judge against a human gold set (Cohen's κ — the
+  format is fixed in `gold_set/README.md` and the computation is a stub), and extending the
+  roster beyond three same-vendor models if credit allows.
 
 ---
 

@@ -31,6 +31,27 @@ def test_prettify_model_strips_date():
     assert prettify_model("llama-3.1-8b-instant") == "llama-3.1-8b-instant"
 
 
+def test_prettify_model_strips_snapshot_suffix():
+    """OpenAI uses TWO resolved-version conventions. Normalizing only the dated one left
+    tables mixing 'gpt-3.5-turbo-0125' with 'gpt-4o-mini', which reads as an inconsistency
+    rather than a version — so the -MMDD form must be stripped too."""
+    assert prettify_model("gpt-3.5-turbo-0125") == "gpt-3.5-turbo"
+    assert prettify_model("gpt-5-nano") == "gpt-5-nano"
+    # A version-free name that happens to end in digits must survive untouched.
+    assert prettify_model("gpt-4o") == "gpt-4o"
+    assert prettify_model("") == ""
+
+
+def test_prettify_model_is_single_sourced():
+    """plots.py, the figure scripts and the demo builder must all use one implementation —
+    three private copies is how the labels drifted apart in the first place."""
+    from breachbench.analysis import prettify_model as exported
+    from breachbench.analysis.labels import prettify_model as canonical
+    from breachbench.analysis.plots import prettify_model as via_plots
+
+    assert canonical is via_plots is exported
+
+
 def test_summary_table_markdown_has_rows():
     cells = _cells()
     table = asr_table(cells, k_max=10, bootstrap_B=50)

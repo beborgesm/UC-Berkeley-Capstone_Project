@@ -12,8 +12,30 @@ import pandas as pd
 from ..config.schema import ExperimentConfig
 from .asr import asr_heatmap_matrix, asr_table
 from .km import kaplan_meier
-from .loader import CellObservations, load_cell_observations
+from .labels import prettify_model
+from .loader import CellObservations, load_cell_observations, load_summary_frame
 from .logrank import logrank_test
+
+
+def _run_census(rounds_csv: str | Path) -> dict[str, int]:
+    """Operational census of the runs behind the analysis.
+
+    Administrative censoring (a non-transient failure after at least one valid round) is a
+    *real* censoring event but not a *model* outcome, so its count is reported explicitly
+    rather than left buried — a reader can then decide whether to exclude it. Transient
+    failures never reach here: they invalidate + reschedule (see docs/PREREGISTRATION.md §3B).
+    """
+    try:
+        df = load_summary_frame(rounds_csv)
+    except Exception:  # a census is nice-to-have; never fail the analysis over it
+        return {}
+    valid = df[df["run_valid"] == 1]
+    reasons = valid["termination_reason"].astype(str).value_counts()
+    return {
+        "admin_censored": int(reasons.get("ADMIN_CENSORED_ERROR", 0)),
+        "budget_exhausted": int(reasons.get("BUDGET_EXHAUSTED", 0)),
+        "invalid": int((df["run_valid"] != 1).sum()),
+    }
 
 
 def _survival_curves_frame(cells: list[CellObservations], k_max: int) -> pd.DataFrame:
@@ -54,12 +76,20 @@ def _run_logrank_pairs(
                       attack_vector=pair.attack_vector).cell_id()
         a, b = lookup.get(cell_a), lookup.get(cell_b)
         if a is None or b is None:
+            # A pre-registered pair naming a model this dataset doesn't contain. Emit blanks,
+            # not NaN: the row is "we declared this and could not compute it", which reads as
+            # a deliberate statement rather than a broken table. See docs/PREREGISTRATION.md.
             rows.append({
                 "scenario_id": pair.scenario_id,
                 "attack_vector": pair.attack_vector.value,
                 "model_a": pair.model_a.model_version,
                 "model_b": pair.model_b.model_version,
-                "status": "MISSING_CELL",
+                "status": "NOT_COLLECTED",
+                "chi2": "",
+                "p_value": "",
+                "n_a": "",
+                "n_b": "",
+                "underpowered": "",
             })
             continue
         res = logrank_test(a.durations, a.events, b.durations, b.events, config.k_max)
@@ -112,7 +142,8 @@ def analyze_and_report(
 
         figures = generate_figures(cells, table, config.k_max, out_dir, bootstrap_B=bootstrap_B)
         _write_markdown_report(out_dir, cells, table, logrank_df, figures,
-                               summary_table_markdown(table), config)
+                               summary_table_markdown(table), config,
+                               census=_run_census(rounds_csv))
     except Exception as exc:  # matplotlib missing or a plotting error must not lose the CSVs
         (out_dir / "PLOTS_SKIPPED.txt").write_text(f"figure generation skipped: {exc}\n")
 
@@ -141,22 +172,45 @@ def analyze_and_report(
     return "\n".join(lines)
 
 
-def _write_markdown_report(out_dir, cells, table, logrank_df, figures, summary_md, config) -> None:
+def _write_markdown_report(out_dir, cells, table, logrank_df, figures, summary_md, config,
+                           census: dict[str, int] | None = None) -> None:
     n_cells = len(cells)
     total_runs = int(sum(c.n for c in cells))
     total_events = int(sum(c.n_events for c in cells))
     total_censored = int(sum(c.n_censored for c in cells))
     scenarios = sorted({c.scenario_id for c in cells})
+    models = sorted({prettify_model(c.target_model_version) for c in cells})
+    census = census or {}
+
+    admin = census.get("admin_censored")
+    if admin is None:
+        admin_line = ""
+    elif admin == 0:
+        admin_line = (
+            "- **Administrative censoring:** 0 runs. Every censored run above is a genuine "
+            f"survival to k_max = {config.k_max}, not an operational failure. (Transient "
+            "failures invalidate + reschedule rather than censor — see "
+            "[pre-registration §3B](../../docs/PREREGISTRATION.md).)"
+        )
+    else:
+        admin_line = (
+            f"- **Administrative censoring:** {admin} run(s) ended in `ADMIN_CENSORED_ERROR` "
+            "(a non-transient operational failure after ≥1 valid round). They are censored, "
+            "not breached; exclude them for a model-only view."
+        )
 
     md = [
         "# BreachBenchmark — Results",
         "",
         f"- **Cells analyzed:** {n_cells}  ·  **valid runs:** {total_runs}  "
         f"(**{total_events}** breaches, **{total_censored}** censored)",
+        f"- **Targets:** {', '.join(models)}  ·  **Attacker (fixed instrument):** "
+        f"`{config.attacker.vendor.value}:{config.attacker.model_version}`",
         f"- **k_max:** {config.k_max}  ·  **repetitions target (N):** {config.repetitions}  "
         f"·  Judge: {'on' if config.judge.enabled else 'off (primary metrics are deterministic)'}",
         "- ASR@k_max is derived from the Kaplan–Meier curve (1 − Ŝ(k_max)), so right-censoring "
         "is handled correctly; CIs are bootstrap (resampling runs within each cell).",
+        *([admin_line] if admin_line else []),
         "",
         "## Attack success rate (ASR@k_max) per cell",
         "",
@@ -173,10 +227,18 @@ def _write_markdown_report(out_dir, cells, table, logrank_df, figures, summary_m
             "",
         ]
     if logrank_df is not None and not logrank_df.empty:
+        n_missing = int((logrank_df.get("status") == "NOT_COLLECTED").sum()) \
+            if "status" in logrank_df else 0
+        note = ("_Declared and locked before any of this data was collected. Non-significance "
+                "≠ equivalence; comparisons are flagged `underpowered` at small N. The full "
+                "locked declaration and the disposition of every hypothesis are in "
+                "[docs/PREREGISTRATION.md](../../docs/PREREGISTRATION.md)._")
+        if n_missing:
+            note += (f"\n\n_{n_missing} pre-registered pair(s) are marked `NOT_COLLECTED`: they "
+                     "name a model absent from this dataset. They were declared, not dropped._")
         md += ["## Pre-registered log-rank tests",
                "",
-               "_Declared before data collection. Non-significance ≠ equivalence; flagged "
-               "underpowered at small N._",
+               note,
                "",
                _df_to_markdown(logrank_df),
                ""]

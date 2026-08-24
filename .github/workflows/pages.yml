@@ -1,0 +1,54 @@
+name: deploy demo to Pages
+
+# Publishes the offline siege replay (demo/replay/) as a static site, so the README can link
+# to a one-click live demo. The page is fully self-contained — no server, no API key, no fetch
+# (its data is a baked `window.BREACHBENCH_REPLAY` global) — so it behaves identically over
+# https:// as it does from file://.
+#
+# ONE-TIME SETUP: repo Settings -> Pages -> Source: "GitHub Actions".
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "demo/replay/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never cancel a running deploy; queue behind it.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sanity-check the demo is self-contained
+        run: |
+          test -f demo/replay/index.html
+          test -f demo/replay/data.js
+          # A CDN link, a fetch() or an XHR would break the offline guarantee the demo
+          # is built on — fail loudly rather than shipping a page that can die on stage.
+          ! grep -rnE 'https?://(cdn|unpkg|cdnjs)|fetch\(|XMLHttpRequest' \
+              demo/replay/index.html demo/replay/app.js demo/replay/themes.js
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: demo/replay
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

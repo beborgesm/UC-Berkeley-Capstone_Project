@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 """Post-hoc LLM-Judge pass over saved transcripts (SECONDARY analysis).
 
-Reads every round's `target_text` from output/runs/<run_id>.jsonl, calls the isolated,
+Reads every round's `target_text` from data/transcripts/<run_id>.jsonl, calls the isolated,
 brand-blind, canary-free LLMJudge (Gemini) on it, and writes judge_scores.csv keyed by
 transcript_ref. This NEVER touches the deterministic primary metrics — the Judge scores
 only qualitative persona/refusal degradation (NO_DEGRADATION | PERSONA_BREAK | WEAK_REFUSAL,
 + ordinal 0-4). Join to rounds.csv on transcript_ref for the secondary degradation analysis.
+
+NOTE: this is the ONLY script here that needs a live API key (GEMINI_API_KEY). The published
+judge_scores.csv is already committed, so rerunning it is optional — every other analysis and
+figure step is fully offline.
 
 Robust for a free-tier daily quota:
   * RESUMABLE — skips transcript_refs already in the output CSV (rerun to continue).
@@ -111,9 +115,10 @@ def load_done(out_csv: Path) -> set[str]:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--rounds-csv", default=str(ROOT / "output" / "rounds_3models.csv"))
-    ap.add_argument("--runs-dir", default=str(ROOT / "runs"))
-    ap.add_argument("--out", default=str(ROOT / "output" / "judge_scores.csv"))
+    # Defaults read the PUBLISHED dataset; point them at output/ + runs/ to score a fresh run.
+    ap.add_argument("--rounds-csv", default=str(ROOT / "data" / "rounds_benchmark.csv"))
+    ap.add_argument("--runs-dir", default=str(ROOT / "data" / "transcripts"))
+    ap.add_argument("--out", default=str(ROOT / "data" / "judge_scores.csv"))
     ap.add_argument("--judge-model", default="gemini-flash-lite-latest")
     ap.add_argument("--limit", type=int, default=0, help="max calls this pass (0 = all)")
     ap.add_argument("--delay", type=float, default=0.3, help="seconds between calls")
