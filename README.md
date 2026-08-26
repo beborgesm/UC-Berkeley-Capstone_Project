@@ -18,7 +18,7 @@ Breaches are decided by deterministic code — never by an AI.
 
 ## ▶ See it happen
 
-[![The siege replay: a breach at round 9](docs/assets/demo-breach.png)](https://beborgesm.github.io/Capstone_Project/)
+[![The siege replay: a breach at round 9](docs/assets/demo.gif)](https://beborgesm.github.io/Capstone_Project/)
 
 **[Open the live siege replay →](https://beborgesm.github.io/Capstone_Project/)**  ·  or run it
 locally: `open demo/replay/index.html`
