@@ -75,9 +75,14 @@ demo/
 The Judge verdicts are baked in at build time from `data/judge_scores.csv`; if a curated run
 isn't yet judged there, run `scripts/judge_transcripts.py` (Gemini) first, then rebuild.
 
-## Optional: live Human Challenge (not built)
+## Scope note: a live "Human Challenge" mode was designed, not built
 
-A "you vs the model" interactive mode is described in [`PLAN.md`](PLAN.md). Since the
-shared OpenAI key is exhausted, if built it would run against a **free-tier** target
-(Gemini/Groq), clearly labeled as different from the benchmark models. The Replay above is
-the primary demo and needs none of that.
+An interactive "you vs the model" mode — the user manually red-teaming a live target,
+side by side with the automated Attacker — was scoped alongside the Replay above. It was
+dropped when the shared OpenAI account ran out of credit mid-collection: with a live attacker
+no longer possible, Replay was promoted to the sole demo (see
+[`DEVELOPMENT_TIMELINE.md`](../DEVELOPMENT_TIMELINE.md) Phase 7). If revisited, it would run
+against a **free-tier** target (Gemini/Groq — the human supplies the adversarial prompts, so
+it only needs a handful of *target* calls per session, well within free daily quota), clearly
+labeled as a different model from the benchmark. The Replay above needs none of that and is
+the primary, finished demo.

@@ -336,7 +336,8 @@ an end-to-end stub run (`test_run_loop_stub`), resumability (`test_runner_resume
 - **`build_replay_data.py`** — joins `data/transcripts/*.jsonl` + `data/rounds_benchmark.csv` +
   `data/judge_scores.csv` → `replay/data.js`. Everything it reads is committed, so it runs from
   a fresh clone with no key; CI checks the committed `data.js` still matches what it produces.
-- **`PLAN.md` / `README.md`** — the demo plan (replay-first) and run/curate instructions.
+- **`README.md`** — what the demo is, how to run and re-curate it, and the scope note on the
+  Human Challenge mode that was designed but not built.
 - One-way dependency: the demo *reads* harness artifacts; the harness never imports the demo.
 
 ---
