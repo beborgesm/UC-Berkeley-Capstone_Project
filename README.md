@@ -7,10 +7,10 @@ multi-turn conversation, and measures robustness the way medicine measures survi
 **Kaplan–Meier curves, censoring, confidence intervals, and pre-registered hypothesis tests.**
 Breaches are decided by deterministic code — never by an AI.
 
-[![tests](https://github.com/beborgesm/Capstone_Project/actions/workflows/tests.yml/badge.svg)](https://github.com/beborgesm/Capstone_Project/actions/workflows/tests.yml)
+[![tests](https://github.com/beborgesm/UC-Berkeley-Capstone_Project/actions/workflows/tests.yml/badge.svg)](https://github.com/beborgesm/UC-Berkeley-Capstone_Project/actions/workflows/tests.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![python](https://img.shields.io/badge/python-3.11%20|%203.12%20|%203.13-blue.svg)](pyproject.toml)
-[![live demo](https://img.shields.io/badge/live%20demo-siege%20replay-ff4d4d.svg)](https://beborgesm.github.io/Capstone_Project/)
+[![live demo](https://img.shields.io/badge/live%20demo-siege%20replay-ff4d4d.svg)](https://beborgesm.github.io/UC-Berkeley-Capstone_Project/)
 
 > UC Berkeley AI-safety capstone — **awarded best project of the course**.
 
@@ -18,9 +18,9 @@ Breaches are decided by deterministic code — never by an AI.
 
 ## ▶ See it happen
 
-[![The siege replay: a breach at round 9](docs/assets/demo.gif)](https://beborgesm.github.io/Capstone_Project/)
+[![The siege replay: a breach at round 9](docs/assets/demo.gif)](https://beborgesm.github.io/UC-Berkeley-Capstone_Project/)
 
-**[Open the live siege replay →](https://beborgesm.github.io/Capstone_Project/)**  ·  or run it
+**[Open the live siege replay →](https://beborgesm.github.io/UC-Berkeley-Capstone_Project/)**  ·  or run it
 locally: `open demo/replay/index.html`
 
 Every round on screen is a **real saved transcript** from the benchmark — the actual attacker
@@ -152,8 +152,8 @@ fully reproducible is every published number, offline, from the saved data.
 No API key and no network needed — the dataset ships with the repo.
 
 ```bash
-git clone https://github.com/beborgesm/Capstone_Project.git
-cd Capstone_Project
+git clone https://github.com/beborgesm/UC-Berkeley-Capstone_Project.git
+cd UC-Berkeley-Capstone_Project
 
 make install      # venv + package with analysis/figure extras
 make test         # the offline test suite, with all API keys stripped from the env
@@ -207,6 +207,7 @@ cannot overwrite the collected dataset. Add a target by editing
 
 | | |
 |---|---|
+| [Slides](docs/slides/BreachBenchmark.pdf) | The capstone presentation deck. |
 | [Conceptual overview](docs/CONCEPTUAL_OVERVIEW.md) | The whole project in plain concepts, no code. **Start here.** |
 | [Technical pipeline](docs/TECHNICAL_PIPELINE.md) | How it's built, module by module. |
 | [Data dictionary](docs/DATA_DICTIONARY.md) | Every column of every published file. |

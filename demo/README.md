@@ -26,7 +26,7 @@ why breaches are decided by code, not by an AI").
 
 ### Run it
 
-**[Open the hosted version →](https://beborgesm.github.io/Capstone_Project/)** or run it
+**[Open the hosted version →](https://beborgesm.github.io/UC-Berkeley-Capstone_Project/)** or run it
 locally — no build step, no dependencies, no server:
 
 ```

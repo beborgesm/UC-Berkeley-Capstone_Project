@@ -56,9 +56,9 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/beborgesm/Capstone_Project"
-Repository = "https://github.com/beborgesm/Capstone_Project"
-Demo = "https://beborgesm.github.io/Capstone_Project/"
+Homepage = "https://github.com/beborgesm/UC-Berkeley-Capstone_Project"
+Repository = "https://github.com/beborgesm/UC-Berkeley-Capstone_Project"
+Demo = "https://beborgesm.github.io/UC-Berkeley-Capstone_Project/"
 
 [project.scripts]
 breachbench-run = "breachbench.cli:run_experiment_cli"
