@@ -4,6 +4,7 @@ pre-registered log-rank tests. Writes CSV artifacts and returns a text summary.
 
 from __future__ import annotations
 
+import math
 from pathlib import Path
 
 import numpy as np
@@ -59,6 +60,24 @@ def _survival_curves_frame(cells: list[CellObservations], k_max: int) -> pd.Data
     return pd.DataFrame(rows)
 
 
+def _round_sig(x: float, figs: int = 8) -> float:
+    """Round to `figs` significant figures.
+
+    chi2 is a pure-Python running sum (platform-independent), but its p-value goes through
+    scipy's chi2 survival function — and pyproject.toml pins no scipy upper bound, so CI
+    installs whatever is newest at build time. A scipy patch release can shift that special
+    function's last 1-2 digits, which turns into a spurious byte-diff on logrank.csv against
+    the committed file even though the result is scientifically identical. 8 significant
+    figures is far more precision than a p-value or chi2 statistic needs (the report only ever
+    displays 4), and comfortably absorbs that noise without rounding away anything meaningful.
+    """
+    if x == 0 or not math.isfinite(x):
+        return x
+    from math import floor, log10
+
+    return round(x, figs - int(floor(log10(abs(x)))) - 1)
+
+
 def _run_logrank_pairs(
     cells: list[CellObservations], config: ExperimentConfig
 ) -> pd.DataFrame:
@@ -99,8 +118,8 @@ def _run_logrank_pairs(
             "model_a": pair.model_a.model_version,
             "model_b": pair.model_b.model_version,
             "status": "OK",
-            "chi2": res.chi2,
-            "p_value": res.p_value,
+            "chi2": _round_sig(res.chi2),
+            "p_value": _round_sig(res.p_value),
             "n_a": res.n_a,
             "n_b": res.n_b,
             "underpowered": res.underpowered,

@@ -170,6 +170,24 @@ def test_logrank_pairs_matched_by_cell_id_despite_resolved_version_drift(tmp_pat
     assert logrank_df.iloc[0]["n_a"] == 4 and logrank_df.iloc[0]["n_b"] == 4
 
 
+def test_round_sig_absorbs_cross_platform_float_noise():
+    # logrank.csv's p-value passes through scipy's chi2 survival function, and pyproject.toml
+    # pins no scipy upper bound — so a routine scipy patch release (or a different BLAS backend
+    # on CI's Linux runner vs a dev machine's macOS Accelerate) can shift its last 1-2
+    # significant digits. That turned a scientifically-identical result into a spurious CI
+    # failure (git diff on the full-precision CSV). _round_sig is the fix: verify it rounds to
+    # the requested significant figures regardless of magnitude, and is a no-op on edge values.
+    from breachbench.analysis.report import _round_sig
+
+    assert _round_sig(38.77645987375795, 8) == 38.77646
+    assert _round_sig(4.75224437956336e-10, 8) == 4.7522444e-10
+    # Two values differing only past the 8th significant figure (the actual observed drift)
+    # must round to the same result.
+    assert _round_sig(4.75224437956336e-10, 8) == _round_sig(4.75224441123e-10, 8)
+    assert _round_sig(0.0, 8) == 0.0
+    assert _round_sig(float("nan"), 8) != _round_sig(float("nan"), 8)  # NaN passes through as-is
+
+
 def test_reliability_is_a_stub():
     with pytest.raises(NotImplementedError):
         cohen_kappa_judge_vs_human("rounds.csv", "gold.csv")
